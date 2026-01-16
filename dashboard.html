@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.5);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .metric-label {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 8px;
+        }
+
+        .metric-change {
+            color: #00ff88;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .metric-change.negative {
+            color: #ff3366;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        canvas {
+            max-height: 350px;
+        }
+
+        .analysis-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .analysis-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #00d4ff;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            padding-bottom: 15px;
+        }
+
+        .insight-box {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .insight-box strong {
+            color: #00d4ff;
+        }
+
+        .recommendation {
+            background: rgba(0, 255, 136, 0.1);
+            border-left: 4px solid #00ff88;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .recommendation strong {
+            color: #00ff88;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #606080;
+            font-size: 0.9em;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            color: #00d4ff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover,
+        .tab-btn.active {
+            background: rgba(0, 212, 255, 0.4);
+            border-color: #00d4ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>📊 E-Commerce Sales Analytics Dashboard</h1>
+            <p class="subtitle">Real-time business intelligence & predictive analytics</p>
+        </header>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Total Revenue</div>
+                <div class="metric-value">₹54.15 Cr</div>
+                <div class="metric-change">↑ 35% YoY</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Total Profit</div>
+                <div class="metric-value">₹10.83 Cr</div>
+                <div class="metric-change">↑ 42% YoY</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Profit Margin</div>
+                <div class="metric-value">20%</div>
+                <div class="metric-change">↑ 2.5%</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Avg Order Value</div>
+                <div class="metric-value">₹3,200</div>
+                <div class="metric-change">↑ 8%</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Unique Customers</div>
+                <div class="metric-value">10,000</div>
+                <div class="metric-change">↑ 28%</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Repeat Purchase Rate</div>
+                <div class="metric-value">42%</div>
+                <div class="metric-change">↑ 15%</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Monthly Churn Rate</div>
+                <div class="metric-value">8%</div>
+                <div class="metric-change negative">↓ -2% (Good!)</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Top Product Revenue</div>
+                <div class="metric-value">₹2.85 Cr</div>
+                <div class="metric-change">↑ 22%</div>
+            </div>
+        </div>
+
+        <!-- Visualization Section -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'sales')">Sales Analytics</button>
+            <button class="tab-btn" onclick="switchTab(event, 'customers')">Customer Insights</button>
+            <button class="tab-btn" onclick="switchTab(event, 'forecast')">Forecasting</button>
+        </div>
+
+        <!-- Sales Analytics Tab -->
+        <div id="sales" class="tab-content active">
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">📈 Daily Revenue Trend</div>
+                    <canvas id="revenueChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">🏆 Top 10 Products</div>
+                    <canvas id="productsChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">📦 Sales by Category</div>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">💰 Profit Margin Distribution</div>
+                    <canvas id="marginChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customers Tab -->
+        <div id="customers" class="tab-content">
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">👥 Customer Segmentation (RFM)</div>
+                    <canvas id="segmentChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">💎 Customer Lifetime Value by Segment</div>
+                    <canvas id="clvChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forecast Tab -->
+        <div id="forecast" class="tab-content">
+            <div class="charts-grid">
+                <div class="chart-container" style="grid-column: 1 / -1;">
+                    <div class="chart-title">🔮 90-Day Revenue Forecast with Confidence Intervals</div>
+                    <canvas id="forecastChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Insights Section -->
+        <div class="analysis-section">
+            <div class="analysis-title">🎯 Key Business Insights</div>
+
+            <div class="insight-box">
+                <strong>Revenue Growth:</strong> Revenue increased 35% YoY to ₹54.15 Crores, with daily average growing from ₹28.5K to ₹62.5K over 15 months.
+            </div>
+
+            <div class="insight-box">
+                <strong>Top 20% Rule:</strong> Top 20% of customers (Champions & Loyal segments) generate 52% of total revenue. Focus retention efforts here for maximum ROI.
+            </div>
+
+            <div class="insight-box">
+                <strong>Churn Pattern:</strong> Monthly churn rate is 8%. At-risk segment (1,200 customers) worth ₹2.16 Cr could be recovered with targeted retention campaigns.
+            </div>
+
+            <div class="insight-box">
+                <strong>Product Performance:</strong> Electronics category leads with ₹1.25 Cr (30% of revenue). Top 10 products account for 42% of total sales.
+            </div>
+
+            <div class="insight-box">
+                <strong>Profit Health:</strong> 20% profit margin with profits growing 42% YoY. Cost control initiatives are paying off while scaling revenue.
+            </div>
+
+            <div class="recommendation">
+                <strong>💡 Recommendation 1:</strong> Implement personalized retention campaign for At-Risk customers (₹2.16Cr value). Expected outcome: Reduce churn by 30% = +₹65L annual value.
+            </div>
+
+            <div class="recommendation">
+                <strong>💡 Recommendation 2:</strong> Increase marketing spend on top 10 products (42% of revenue). Current focus on long tail is inefficient.
+            </div>
+
+            <div class="recommendation">
+                <strong>💡 Recommendation 3:</strong> Launch "VIP" program for Champions (800 customers). Average CLV is ₹85K. Invest ₹5K per customer for 20% CLV increase = +₹6.8L.
+            </div>
+
+            <div class="recommendation">
+                <strong>💡 Recommendation 4:</strong> Optimize pricing for 14-20% profit margin sweet spot (65% of transactions). This range shows best balance of volume & margin.
+            </div>
+
+            <div class="recommendation">
+                <strong>💡 Recommendation 5:</strong> Forecast shows 47% growth expected over next 90 days. Plan inventory for ₹68K daily revenue minimum.
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>📊 E-Commerce Analytics Dashboard | Data-Driven Business Intelligence</p>
+            <p>Last Updated: December 30, 2025 | Ready for Freelance Projects on Contra</p>
+            <p>Built with Python • Pandas • Analysis • Machine Learning</p>
+        </div>
+    </div>
+
+    <script>
+        // Chart Configuration
+        const chartConfig = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#a0a0a0',
+                        font: { size: 11 }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#a0a0a0' },
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                },
+                y: {
+                    ticks: { color: '#a0a0a0' },
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                }
+            }
+        };
+
+        // Daily Revenue Trend
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Dec 28'],
+                datasets: [{
+                    label: 'Daily Revenue',
+                    data: [28500, 32100, 35800, 38200, 41500, 44800, 47200, 49600, 52100, 54500, 57200, 59800, 62500],
+                    borderColor: '#00d4ff',
+                    backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#00d4ff',
+                    pointBorderColor: '#fff',
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                ...chartConfig,
+                plugins: {
+                    ...chartConfig.plugins,
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Top Products
+        const productsCtx = document.getElementById('productsChart').getContext('2d');
+        new Chart(productsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['P15', 'P42', 'P8', 'P31', 'P19', 'P7', 'P44', 'P12', 'P27', 'P3'],
+            datasets: [{
+                    label: 'Revenue (₹)',
+                    data: [285000, 272500, 248300, 235600, 218900, 205200, 192800, 178500, 165300, 152400],
+                    backgroundColor: '#0099ff',
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: { 
+                ...chartConfig, 
+                indexAxis: 'y', 
+                plugins: { 
+                    ...chartConfig.plugins, 
+                    legend: { display: false } 
+                } 
+            }
+        });
+
+        // Category Sales
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Electronics', 'Fashion', 'Home', 'Sports', 'Books'],
+                datasets: [{
+                    data: [1250000, 980000, 875000, 625000, 420000],
+                    backgroundColor: ['#00d4ff', '#00ff88', '#ffaa00', '#ff3366', '#00ccff'],
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 2
+                }]
+            },
+            options: chartConfig
+        });
+
+        // Profit Margin
+        const marginCtx = document.getElementById('marginChart').getContext('2d');
+        new Chart(marginCtx, {
+            type: 'bar',
+            data: {
+                labels: ['8-10%', '10-12%', '12-14%', '14-16%', '16-18%', '18-20%', '20-22%', '22-24%'],
+                datasets: [{
+                    label: 'Transactions',
+                    data: [45, 85, 125, 180, 220, 195, 140, 75],
+                    backgroundColor: '#00ff88',
+                    borderRadius: 8
+                }]
+            },
+            options: { 
+                ...chartConfig, 
+                plugins: { 
+                    ...chartConfig.plugins, 
+                    legend: { display: false } 
+                } 
+            }
+        });
+
+        // Customer Segmentation
+        const segmentCtx = document.getElementById('segmentChart').getContext('2d');
+        new Chart(segmentCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Champions\n(₹85K CLV)', 'Loyal\n(₹32K CLV)', 'At Risk\n(₹18K CLV)', 'Lost\n(₹2K CLV)'],
+                datasets: [{
+                    data: [8, 25, 12, 55],
+                    backgroundColor: ['#ff6b6b', '#00d4ff', '#ffaa00', '#606080'],
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 2
+                }]
+            },
+            options: chartConfig
+        });
+
+        // CLV by Segment
+        const clvCtx = document.getElementById('clvChart').getContext('2d');
+        new Chart(clvCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Champions', 'Loyal', 'At Risk', 'Lost'],
+                datasets: [{
+                    label: 'Avg Customer Lifetime Value',
+                    data: [85000, 32000, 18000, 2000],
+                    backgroundColor: ['#ff6b6b', '#00d4ff', '#ffaa00', '#606080'],
+                    borderRadius: 8
+                }]
+            },
+            options: { 
+                ...chartConfig, 
+                plugins: { 
+                    ...chartConfig.plugins, 
+                    legend: { display: false } 
+                } 
+            }
+        });
+
+        // Revenue Forecast
+        const forecastCtx = document.getElementById('forecastChart').getContext('2d');
+        new Chart(forecastCtx, {
+            type: 'line',
+            data: {
+                labels: ['D-90', 'D-75', 'D-60', 'D-45', 'D-30', 'D-15', 'Today', 'D+15', 'D+30', 'D+45', 'D+60', 'D+75', 'D+90'],
+                datasets: [
+                    {
+                        label: 'Historical Revenue',
+                        data: [28500, 32100, 35800, 38200, 41500, 44800, 45200, null, null, null, null, null, null],
+                        borderColor: '#00d4ff',
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0.4,
+                        pointBackgroundColor: '#00d4ff'
+                    },
+                    {
+                        label: 'Forecasted Revenue',
+                        data: [null, null, null, null, null, null, 45200, 48300, 51800, 54600, 58200, 62100, 68400],
+                        borderColor: '#00ff88',
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                        borderWidth: 3,
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.4,
+                        pointBackgroundColor: '#00ff88'
+                    },
+                    {
+                        label: 'Upper Confidence (95%)',
+                        data: [null, null, null, null, null, null, null, 51400, 55200, 57900, 61800, 65300, 72600],
+                        borderColor: 'rgba(0, 255, 136, 0.3)',
+                        backgroundColor: 'rgba(0, 255, 136, 0.05)',
+                        borderWidth: 1,
+                        borderDash: [2, 2],
+                        fill: false,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Lower Confidence (95%)',
+                        data: [null, null, null, null, null, null, null, 45200, 48400, 51200, 54600, 58900, 64200],
+                        borderColor: 'rgba(0, 255, 136, 0.3)',
+                        backgroundColor: 'rgba(0, 255, 136, 0.05)',
+                        borderWidth: 1,
+                        borderDash: [2, 2],
+                        fill: '-1',
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: chartConfig
+        });
+
+        // Tab Switching
+        function switchTab(e, tabName) {
+            const contents = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-btn');
+            
+            contents.forEach(c => c.classList.remove('active'));
+            buttons.forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            e.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
