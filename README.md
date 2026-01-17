@@ -33,17 +33,17 @@ All of these are backed by code in `analytics_pipeline.py` and surfaced in `ANAL
 
 ```text
 ecommerce-analytics/
-├── analytics_pipeline.py        # Main Python analytics pipeline
-├── dashboard.html               # Interactive KPI dashboard (Chart.js, static HTML)
-├── README.md                    # This documentation
+├── analytics_pipeline.py        
+├── dashboard.html               
+├── README.md                    
 │
 ├── data/
 │   └── raw/
-│       └── sample_ecommerce_data.csv   # Example raw data (schema example)
+│       └── sample_ecommerce_data.csv   
 │
-├── analytics_output/            # Created at runtime
-│   └── analytics_dashboard.png  # Auto‑generated matplotlib dashboard
+├── analytics_output/            
+│   └── analytics_dashboard.png  
 │
-├── ANALYTICS_REPORT.txt         # Auto‑generated executive report
+├── ANALYTICS_REPORT.txt         
 └── sql/
-    └── analysis_queries.sql     # Example SQL for trends & RFM‑style analysis
+    └── analysis_queries.sql     
